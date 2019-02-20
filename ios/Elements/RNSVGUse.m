@@ -21,50 +21,28 @@
     _href = href;
 }
 
-- (void)setX:(RNSVGLength *)x
+- (void)setWidth:(RNSVGLength *)width
 {
-    if ([x isEqualTo:_x]) {
+    if ([width isEqualTo:_width]) {
         return;
     }
 
     [self invalidate];
-    _x = x;
+    _width = width;
 }
 
-- (void)setY:(RNSVGLength *)y
+- (void)setHeight:(RNSVGLength *)height
 {
-    if ([y isEqualTo:_y]) {
+    if ([height isEqualTo:_height]) {
         return;
     }
 
     [self invalidate];
-    _y = y;
-}
-
-
-- (void)setUsewidth:(RNSVGLength *)usewidth
-{
-    if ([usewidth isEqualTo:_usewidth]) {
-        return;
-    }
-
-    [self invalidate];
-    _usewidth = usewidth;
-}
-
-- (void)setUseheight:(RNSVGLength *)useheight
-{
-    if ([useheight isEqualTo:_useheight]) {
-        return;
-    }
-
-    [self invalidate];
-    _useheight = useheight;
+    _height = height;
 }
 
 - (void)renderLayerTo:(CGContextRef)context rect:(CGRect)rect
 {
-    CGContextTranslateCTM(context, [self relativeOnWidth:self.x], [self relativeOnHeight:self.y]);
     RNSVGNode* template = [self.svgView getDefinedTemplate:self.href];
     if (template) {
         [self beginTransparencyLayer:context];
@@ -76,7 +54,7 @@
 
         if ([template class] == [RNSVGSymbol class]) {
             RNSVGSymbol *symbol = (RNSVGSymbol*)template;
-            [symbol renderSymbolTo:context width:[self relativeOnWidth:self.usewidth] height:[self relativeOnHeight:self.useheight]];
+            [symbol renderSymbolTo:context width:[self relativeOnWidth:self.width] height:[self relativeOnHeight:self.height]];
         } else {
             [template renderTo:context rect:rect];
         }
@@ -90,17 +68,8 @@
         // TODO: calling yellow box here
         RCTLogWarn(@"`Use` element expected a pre-defined svg template as `href` prop, template named: %@ is not defined.", self.href);
     }
-    CGRect bounds = template.clientRect;
-    self.clientRect = bounds;
-    CGAffineTransform transform = CGAffineTransformConcat(self.matrix, self.transforms);
-    CGPoint mid = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
-    CGPoint center = CGPointApplyAffineTransform(mid, transform);
-
-    self.bounds = bounds;
-    if (!isnan(center.x) && !isnan(center.y)) {
-        self.center = center;
-    }
-    self.frame = bounds;
+    self.clientRect = template.clientRect;
+    self.bounds = template.clientRect;
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
